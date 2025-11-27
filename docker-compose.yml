@@ -1,0 +1,32 @@
+services:
+  haproxy:
+    image: haproxy:latest
+    container_name: haproxy_container
+    ports:
+      - "80:80"
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    restart: unless-stopped
+    depends_on:
+      - waitlist_app
+    networks:
+      - hapnet
+
+  waitlist_app:
+    build: 
+      context: ./
+    volumes:
+      - ./waitlist_service.py:/app/waitlist_service.py:ro
+    environment:
+      HAPROXY_STATS_HOST: haproxy
+      HAPROXY_STATS_PORT: "1999"
+      AVG_SERVICE_TIME: "1.5"
+    ports:
+      - '800'
+    networks:
+      - hapnet
+
+networks:
+  hapnet:
+    driver: bridge
+
